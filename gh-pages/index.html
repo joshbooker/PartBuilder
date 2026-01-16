@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Part Builder</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>PART BUILDER</h1>
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+      <input type="file" id="jsonFilePicker" accept=".json" style="display: none;" />
+      <button onclick="document.getElementById('jsonFilePicker').click()" class="reset-btn">
+        Load Different JSON File
+      </button>
+      <span id="loadedFileName" style="margin-left: 15px; color: #2c3e50; font-size: 14px;"></span>
+    </div>
+    
+    <div class="builder-container">
+      <div id="dropdownsContainer" class="dropdowns-row"></div>
+      
+      <div id="partNumberDisplay" class="hidden part-number-display">
+        <div class="part-number-label">Generated Part Number</div>
+        <div id="partNumValue" class="part-number-value"></div>
+        <div class="part-number-label">Full Description</div>
+        <div id="partDescValue" class="part-desc-value"></div>
+        <button class="reset-btn" onclick="resetBuilder()">Reset</button>
+      </div>
+      
+      <div id="optionsPanel" class="hidden options-panel">
+        <div class="options-title" id="optionsPanelTitle">Select an Option</div>
+        <div class="options-table-container" id="optionsTableContainer"></div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="app.js"></script>
+</body>
+</html>
