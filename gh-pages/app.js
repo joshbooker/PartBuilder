@@ -44,6 +44,9 @@ function renderDropdowns() {
   
   document.getElementById('select_masterClass').addEventListener('change', onMasterClassChange);
   document.getElementById('select_subClass').addEventListener('change', onSubClassChange);
+  
+  // Show master class table on initial load
+  showMasterClassPanel();
 }
 
 function createDropdown(id, label, options, disabled) {
@@ -69,26 +72,41 @@ function onMasterClassChange(e) {
   const select = e.target;
   const masterClassId = parseInt(select.value);
   
-  currentSelection.masterClass = null;
-  currentSelection.subClass = null;
-  currentSelection.attributes = [];
-  clearAttributeDropdowns();
-  hideOptionsPanel();
-  hidePartNumber();
-  
   if (isNaN(masterClassId)) {
+    currentSelection.masterClass = null;
+    currentSelection.subClass = null;
+    currentSelection.attributes = [];
+    clearAttributeDropdowns();
+    hidePartNumber();
     document.getElementById('code_masterClass').textContent = '';
     document.getElementById('select_subClass').disabled = true;
     document.getElementById('select_subClass').innerHTML = '<option value="">--</option>';
     document.getElementById('code_subClass').textContent = '';
+    showMasterClassPanel();
     return;
   }
+  
+  selectMasterClass(masterClassId);
+}
+
+function selectMasterClass(masterClassId) {
+  currentSelection.masterClass = null;
+  currentSelection.subClass = null;
+  currentSelection.attributes = [];
+  clearAttributeDropdowns();
+  hidePartNumber();
   
   const masterClass = attributesData.find(mc => mc.MasterClassID === masterClassId);
   currentSelection.masterClass = masterClass;
   
-  document.getElementById('code_masterClass').textContent = (masterClass.CCode || '').toUpperCase();
+  // Update dropdown
+  const select = document.getElementById('select_masterClass');
+  if (select) {
+    select.value = masterClassId;
+    document.getElementById('code_masterClass').textContent = (masterClass.CCode || '').toUpperCase();
+  }
   
+  // Update sub class dropdown
   const subClassSelect = document.getElementById('select_subClass');
   if (masterClass.SubClasses && masterClass.SubClasses.length > 0) {
     const sortedSubClasses = masterClass.SubClasses
@@ -100,32 +118,51 @@ function onMasterClassChange(e) {
       sortedSubClasses.map(item => 
         `<option value="${item.idx}" data-code="${escapeHTML(item.sc.SCode)}">${escapeHTML((item.sc.SName || '').toUpperCase())} (${escapeHTML((item.sc.SCode || '').toUpperCase())})</option>`
       ).join('');
+    document.getElementById('code_subClass').textContent = '';
+    
+    // Show sub class table
+    showSubClassPanel();
   } else {
     subClassSelect.disabled = true;
     subClassSelect.innerHTML = '<option value="">No sub classes</option>';
+    hideOptionsPanel();
   }
-  document.getElementById('code_subClass').textContent = '';
 }
 
 function onSubClassChange(e) {
   const select = e.target;
   const subClassIdx = parseInt(select.value);
   
+  if (isNaN(subClassIdx)) {
+    currentSelection.subClass = null;
+    currentSelection.attributes = [];
+    clearAttributeDropdowns();
+    hidePartNumber();
+    document.getElementById('code_subClass').textContent = '';
+    if (currentSelection.masterClass) {
+      showSubClassPanel();
+    }
+    return;
+  }
+  
+  selectSubClass(subClassIdx);
+}
+
+function selectSubClass(subClassIdx) {
   currentSelection.subClass = null;
   currentSelection.attributes = [];
   clearAttributeDropdowns();
-  hideOptionsPanel();
   hidePartNumber();
-  
-  if (isNaN(subClassIdx)) {
-    document.getElementById('code_subClass').textContent = '';
-    return;
-  }
   
   const subClass = currentSelection.masterClass.SubClasses[subClassIdx];
   currentSelection.subClass = subClass;
   
-  document.getElementById('code_subClass').textContent = (subClass.SCode || '').toUpperCase();
+  // Update dropdown
+  const select = document.getElementById('select_subClass');
+  if (select) {
+    select.value = subClassIdx;
+    document.getElementById('code_subClass').textContent = (subClass.SCode || '').toUpperCase();
+  }
   
   if (subClass.Attributes && subClass.Attributes.length > 0) {
     const sortedAttributes = [...subClass.Attributes].sort((a, b) => 
@@ -147,13 +184,19 @@ function renderAttributeDropdowns(sortedAttributes) {
   const metallurgyAttr = metallurgyIndex >= 0 ? sortedAttributes[metallurgyIndex] : null;
   
   if (metallurgyAttr) {
-    metallurgyHtml = createDropdown(`attr_${metallurgyIndex}`, metallurgyAttr.Attribute, [], false);
+    const metallurgyOptions = (metallurgyAttr.Options || [])
+      .map((opt, idx) => ({ value: idx, text: `${opt.Code} - ${opt.Description}`, code: opt.Code }))
+      .sort((a, b) => (a.code || '').localeCompare(b.code || ''));
+    metallurgyHtml = createDropdown(`attr_${metallurgyIndex}`, metallurgyAttr.Attribute, metallurgyOptions, false);
   }
   
   const otherAttributes = sortedAttributes.filter((attr, idx) => idx !== metallurgyIndex);
   otherAttributes.forEach((attr) => {
     const actualIndex = sortedAttributes.findIndex(a => a.AttributeID === attr.AttributeID);
-    otherHtml += createDropdown(`attr_${actualIndex}`, attr.Attribute, [], true);
+    const options = (attr.Options || [])
+      .map((opt, idx) => ({ value: idx, text: `${opt.Code} - ${opt.Description}`, code: opt.Code }))
+      .sort((a, b) => (a.code || '').localeCompare(b.code || ''));
+    otherHtml += createDropdown(`attr_${actualIndex}`, attr.Attribute, options, true);
   });
   
   metallurgyContainer.innerHTML = metallurgyHtml;
@@ -250,6 +293,9 @@ function onAttributeChange(attrIndex, sortedAttributes) {
   
   document.getElementById(`code_attr_${attrIndex}`).textContent = (option.Code || '').toUpperCase();
   
+  // Repopulate subsequent attribute dropdowns with exclusion filtering
+  repopulateAttributeDropdowns(attrIndex, sortedAttributes);
+  
   refreshCurrentOptionsPanel();
   
   if (isMetallurgy) {
@@ -291,7 +337,43 @@ function onAttributeChange(attrIndex, sortedAttributes) {
   }
 }
 
+function repopulateAttributeDropdowns(changedAttrIndex, sortedAttributes) {
+  // Repopulate all enabled attribute dropdowns to apply exclusion rules
+  sortedAttributes.forEach((attr, idx) => {
+    const select = document.getElementById(`select_attr_${idx}`);
+    if (select && !select.disabled) {
+      const currentValue = select.value;
+      const filteredOptions = (attr.Options || [])
+        .map((opt, optIdx) => ({ 
+          value: optIdx, 
+          text: `${opt.Code} - ${opt.Description}`, 
+          code: opt.Code,
+          excluded: isOptionExcluded(opt, idx)
+        }))
+        .sort((a, b) => (a.code || '').localeCompare(b.code || ''));
+      
+      select.innerHTML = '<option value="">--</option>' +
+        filteredOptions.map(item => {
+          const disabled = item.excluded ? ' disabled style="color: #999; text-decoration: line-through;"' : '';
+          return `<option value="${item.value}"${disabled}>${escapeHTML((item.text || '').toUpperCase())}</option>`;
+        }).join('');
+      
+      // Restore previous selection if still valid
+      if (currentValue) {
+        const optionStillExists = filteredOptions.find(o => o.value.toString() === currentValue && !o.excluded);
+        if (optionStillExists) {
+          select.value = currentValue;
+        }
+      }
+    }
+  });
+}
+
 function showOptionsPanel(attribute, attrIndex, sortedAttributes) {
+  if (!currentSelection.masterClass || !currentSelection.masterClass.SubClasses) {
+    return '<div class="empty-state">No sub classes available</div>';
+  }
+  
   const panel = document.getElementById('optionsPanel');
   const title = document.getElementById('optionsPanelTitle');
   const container = document.getElementById('optionsTableContainer');
@@ -308,6 +390,72 @@ function hideOptionsPanel() {
   document.getElementById('optionsPanel').classList.add('hidden');
   currentOptionsPanel.attrIndex = null;
   currentOptionsPanel.sortedAttributes = null;
+}
+
+function showMasterClassPanel() {
+  const panel = document.getElementById('optionsPanel');
+  const title = document.getElementById('optionsPanelTitle');
+  const container = document.getElementById('optionsTableContainer');
+  
+  title.textContent = 'SELECT MASTER CLASS';
+  container.innerHTML = renderMasterClassTable();
+  panel.classList.remove('hidden');
+}
+
+function renderMasterClassTable() {
+  const sortedMasterClasses = attributesData
+    .map((mc, idx) => ({ mc, idx }))
+    .sort((a, b) => (a.mc.CCode || '').localeCompare(b.mc.CCode || ''));
+  
+  let html = '<table><thead><tr>';
+  html += '<th>CODE</th><th>DESCRIPTION</th>';
+  html += '</tr></thead><tbody>';
+  
+  sortedMasterClasses.forEach(({ mc, idx }) => {
+    const isSelected = currentSelection.masterClass?.MasterClassID === mc.MasterClassID;
+    const rowClass = isSelected ? 'selected-row clickable-row' : 'clickable-row';
+    
+    html += `<tr class="${rowClass}" onclick="selectMasterClass(${mc.MasterClassID})">`;
+    html += `<td>${escapeHTML((mc.CCode || '').toUpperCase())}</td>`;
+    html += `<td>${escapeHTML((mc.CName || '').toUpperCase())}</td>`;
+    html += '</tr>';
+  });
+  
+  html += '</tbody></table>';
+  return html;
+}
+
+function showSubClassPanel() {
+  const panel = document.getElementById('optionsPanel');
+  const title = document.getElementById('optionsPanelTitle');
+  const container = document.getElementById('optionsTableContainer');
+  
+  title.textContent = 'SELECT SUB CLASS';
+  container.innerHTML = renderSubClassTable();
+  panel.classList.remove('hidden');
+}
+
+function renderSubClassTable() {
+  const sortedSubClasses = currentSelection.masterClass.SubClasses
+    .map((sc, idx) => ({ sc, idx }))
+    .sort((a, b) => (a.sc.SCode || '').localeCompare(b.sc.SCode || ''));
+  
+  let html = '<table><thead><tr>';
+  html += '<th>CODE</th><th>DESCRIPTION</th>';
+  html += '</tr></thead><tbody>';
+  
+  sortedSubClasses.forEach(({ sc, idx }) => {
+    const isSelected = currentSelection.subClass?.SubClassID === sc.SubClassID;
+    const rowClass = isSelected ? 'selected-row clickable-row' : 'clickable-row';
+    
+    html += `<tr class="${rowClass}" onclick="selectSubClass(${idx})">`;
+    html += `<td>${escapeHTML((sc.SCode || '').toUpperCase())}</td>`;
+    html += `<td>${escapeHTML((sc.SName || '').toUpperCase())}</td>`;
+    html += '</tr>';
+  });
+  
+  html += '</tbody></table>';
+  return html;
 }
 
 function renderOptionsTable(attribute, attrIndex, sortedAttributes) {
@@ -419,23 +567,6 @@ function isOptionExcluded(option, currentAttrIndex) {
 function selectOptionFromTable(attrIndex, optionIndex) {
   const select = document.getElementById(`select_attr_${attrIndex}`);
   if (select) {
-    const subClass = currentSelection.subClass;
-    const sortedAttributes = [...subClass.Attributes].sort((a, b) => 
-      (a.Sequence || 0) - (b.Sequence || 0)
-    );
-    const attribute = sortedAttributes[attrIndex];
-    
-    if (select.options.length <= 1) {
-      const sortedOptions = attribute.Options
-        .map((opt, idx) => ({ opt, idx }))
-        .sort((a, b) => (a.opt.Code || '').localeCompare(b.opt.Code || ''));
-      
-      select.innerHTML = '<option value="">--</option>' +
-        sortedOptions.map(item => 
-          `<option value="${item.idx}">${escapeHTML((item.opt.Code || '').toUpperCase())} - ${escapeHTML((item.opt.Description || '').toUpperCase())}</option>`
-        ).join('');
-    }
-    
     select.value = optionIndex;
     select.dispatchEvent(new Event('change'));
   }
@@ -515,7 +646,6 @@ function resetBuilder() {
   };
   renderDropdowns();
   hidePartNumber();
-  hideOptionsPanel();
 }
 
 // Initialize on page load
@@ -531,8 +661,12 @@ window.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('loadedFileName').textContent = '✓ Loaded attributes.json';
   } catch (error) {
     console.error('Error loading data:', error);
-    document.getElementById('dropdownsContainer').innerHTML = 
-      `<div class="empty-state">Error loading attributes.json. Please ensure the file exists or load a different JSON file.</div>`;
+    const panel = document.getElementById('optionsPanel');
+    const title = document.getElementById('optionsPanelTitle');
+    const container = document.getElementById('optionsTableContainer');
+    title.textContent = 'ERROR';
+    container.innerHTML = `<div class="empty-state">Error loading attributes.json. Please ensure the file exists or load a different JSON file.</div>`;
+    panel.classList.remove('hidden');
   }
   
   // File picker handler

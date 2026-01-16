@@ -8,9 +8,9 @@
 </head>
 <body>
   <div class="container">
-    <h1>PART BUILDER</h1>
+    <h1 id="pageHeader">PART BUILDER</h1>
     
-    <div style="text-align: center; margin-bottom: 20px;">
+    <div id="filePickerSection" style="text-align: center; margin-bottom: 20px;">
       <input type="file" id="jsonFilePicker" accept=".json" style="display: none;" />
       <button onclick="document.getElementById('jsonFilePicker').click()" class="reset-btn">
         Load Different JSON File
@@ -36,6 +36,18 @@
     </div>
   </div>
   
+  <script>
+    // Detect if loaded in iframe and hide non-essential elements
+    if (window !== window.parent) {
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('pageHeader').style.display = 'none';
+        document.getElementById('filePickerSection').style.display = 'none';
+        document.body.style.padding = '0';
+        document.querySelector('.builder-container').style.margin = '0';
+        document.querySelector('.builder-container').style.borderRadius = '0';
+      });
+    }
+  </script>
   <script src="app.js"></script>
 </body>
 </html>
