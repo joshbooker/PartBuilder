@@ -9,6 +9,7 @@ let currentOptionsPanel = {
   attrIndex: null,
   sortedAttributes: null
 };
+let pickedParts = [];
 
 function escapeHTML(str) {
   return String(str || '').replace(/[&<>"']/g, s => ({
@@ -646,6 +647,98 @@ function resetBuilder() {
   };
   renderDropdowns();
   hidePartNumber();
+}
+
+function pickPartNumber() {
+  const partNum = document.getElementById('partNumValue').textContent;
+  const partDesc = document.getElementById('partDescValue').textContent;
+  
+  if (!partNum || partNum.trim() === '') return;
+  
+  // Add to picked parts array
+  pickedParts.push({
+    partNumber: partNum,
+    description: partDesc,
+    timestamp: new Date().toISOString()
+  });
+  
+  // Update display
+  displayPickedParts();
+  
+  // Reset builder for next part
+  resetBuilder();
+}
+
+function displayPickedParts() {
+  const container = document.getElementById('pickedPartsContainer');
+  const list = document.getElementById('pickedPartsList');
+  
+  if (pickedParts.length === 0) {
+    container.classList.add('hidden');
+    return;
+  }
+  
+  container.classList.remove('hidden');
+  
+  let html = '<table><thead><tr>';
+  html += '<th>#</th><th>PART NUMBER</th><th>DESCRIPTION</th><th></th>';
+  html += '</tr></thead><tbody>';
+  
+  pickedParts.forEach((part, index) => {
+    html += '<tr>';
+    html += `<td>${index + 1}</td>`;
+    html += `<td><strong>${escapeHTML(part.partNumber)}</strong></td>`;
+    html += `<td>${escapeHTML(part.description)}</td>`;
+    html += `<td><button class="remove-btn" onclick="removePickedPart(${index})">×</button></td>`;
+    html += '</tr>';
+  });
+  
+  html += '</tbody></table>';
+  list.innerHTML = html;
+}
+
+function removePickedPart(index) {
+  pickedParts.splice(index, 1);
+  displayPickedParts();
+}
+
+function clearPickedParts() {
+  if (pickedParts.length === 0) return;
+  
+  if (confirm(`Clear all ${pickedParts.length} picked part(s)?`)) {
+    pickedParts = [];
+    displayPickedParts();
+  }
+}
+
+function copyPickedPartsToClipboard() {
+  if (pickedParts.length === 0) {
+    alert('No parts picked yet!');
+    return;
+  }
+  
+  const partNumbers = pickedParts.map(p => p.partNumber).join('\n');
+  
+  navigator.clipboard.writeText(partNumbers)
+    .then(() => {
+      alert(`Copied ${pickedParts.length} part number(s) to clipboard!\n\n${partNumbers}`);
+    })
+    .catch(err => {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = partNumbers;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        alert(`Copied ${pickedParts.length} part number(s) to clipboard!\n\n${partNumbers}`);
+      } catch (err) {
+        alert('Failed to copy to clipboard. Part numbers:\n\n' + partNumbers);
+      }
+      document.body.removeChild(textArea);
+    });
 }
 
 // Initialize on page load

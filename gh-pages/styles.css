@@ -224,6 +224,123 @@ tr:hover {
   background: rgba(13, 109, 160, 0.9);
   transform: translateY(1px);
 }
+.pick-btn {
+  font-family: SourceSansPro-Regular, sans-serif;
+  background: rgb(13, 109, 160);
+  color: white;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin: 5px 10px 5px 5px;
+  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.pick-btn:hover {
+  background: rgba(13, 109, 160, 0.8);
+}
+.pick-btn:active {
+  background: rgba(13, 109, 160, 0.9);
+  transform: translateY(1px);
+}
+.done-btn {
+  font-family: SourceSansPro-Regular, sans-serif;
+  background: rgb(13, 109, 160);
+  color: white;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  padding: 6px 12px;
+  margin-right: 5px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.done-btn:hover {
+  background: rgba(13, 109, 160, 0.8);
+}
+.done-btn:active {
+  background: rgba(13, 109, 160, 0.9);
+  transform: translateY(1px);
+}
+.clear-btn {
+  font-family: SourceSansPro-Regular, sans-serif;
+  background: rgb(13, 109, 160);
+  color: white;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.clear-btn:hover {
+  background: rgba(13, 109, 160, 0.8);
+}
+.clear-btn:active {
+  background: rgba(13, 109, 160, 0.9);
+  transform: translateY(1px);
+}
+.remove-btn {
+  background: transparent;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  line-height: 1;
+  padding: 0;
+}
+.remove-btn:hover {
+  background: #dc3545;
+  color: white;
+}
+.picked-parts-list {
+  background: white;
+  border: 1px solid #e1e4e8;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.picked-parts-list table {
+  margin: 0;
+  border: none;
+}
+.picked-parts-list td {
+  vertical-align: middle;
+}
+.picked-parts-list td:first-child {
+  width: 40px;
+  text-align: center;
+  font-weight: 600;
+  color: #6c757d;
+}
+.picked-parts-list td:last-child {
+  width: 50px;
+  text-align: center;
+}
+.picked-parts-container {
+  background: hsl(192, 34%, 68%);
+  color: #2c3e50;
+  padding: 20px;
+  border-radius: 4px;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px hsla(192, 34%, 68%, 0.3);
+}
 .loading {
   text-align: center;
   padding: 20px;

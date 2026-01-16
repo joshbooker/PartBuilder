@@ -21,17 +21,31 @@
     <div class="builder-container">
       <div id="dropdownsContainer" class="dropdowns-row"></div>
       
+      <div id="optionsPanel" class="hidden options-panel">
+        <div class="options-title" id="optionsPanelTitle">Select an Option</div>
+        <div class="options-table-container" id="optionsTableContainer"></div>
+      </div>
+      
       <div id="partNumberDisplay" class="hidden part-number-display">
         <div class="part-number-label">Generated Part Number</div>
         <div id="partNumValue" class="part-number-value"></div>
         <div class="part-number-label">Full Description</div>
         <div id="partDescValue" class="part-desc-value"></div>
-        <button class="reset-btn" onclick="resetBuilder()">Reset</button>
+        <div style="margin-top: 15px;">
+          <button class="pick-btn" onclick="pickPartNumber()">Pick</button>
+          <button class="reset-btn" onclick="resetBuilder()">Reset</button>
+        </div>
       </div>
       
-      <div id="optionsPanel" class="hidden options-panel">
-        <div class="options-title" id="optionsPanelTitle">Select an Option</div>
-        <div class="options-table-container" id="optionsTableContainer"></div>
+      <div id="pickedPartsContainer" class="hidden picked-parts-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div class="part-number-label">Picked Parts</div>
+          <div>
+            <button class="done-btn" onclick="copyPickedPartsToClipboard()">Done</button>
+            <button class="clear-btn" onclick="clearPickedParts()">Clear All</button>
+          </div>
+        </div>
+        <div id="pickedPartsList" class="picked-parts-list"></div>
       </div>
     </div>
   </div>
