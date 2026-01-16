@@ -664,9 +664,6 @@ function pickPartNumber() {
   
   // Update display
   displayPickedParts();
-  
-  // Reset builder for next part
-  resetBuilder();
 }
 
 function displayPickedParts() {

@@ -268,6 +268,28 @@ tr:hover {
   background: rgba(13, 109, 160, 0.9);
   transform: translateY(1px);
 }
+.add-btn {
+  font-family: SourceSansPro-Regular, sans-serif;
+  background: rgb(13, 109, 160);
+  color: white;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  padding: 6px 12px;
+  margin-right: 5px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.add-btn:hover {
+  background: rgba(13, 109, 160, 0.8);
+}
+.add-btn:active {
+  background: rgba(13, 109, 160, 0.9);
+  transform: translateY(1px);
+}
 .clear-btn {
   font-family: SourceSansPro-Regular, sans-serif;
   background: rgb(13, 109, 160);
