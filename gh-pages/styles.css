@@ -224,6 +224,31 @@ tr:hover {
   background: rgba(13, 109, 160, 0.9);
   transform: translateY(1px);
 }
+.github-btn {
+  font-family: SourceSansPro-Regular, sans-serif;
+  background: #24292e;
+  color: white;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 10px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  vertical-align: middle;
+}
+.github-btn:hover {
+  background: #0366d6;
+}
+.github-btn:active {
+  background: #044289;
+  transform: translateY(1px);
+}
+.github-btn svg {
+  display: block;
+}
 .pick-btn {
   font-family: SourceSansPro-Regular, sans-serif;
   background: rgb(13, 109, 160);

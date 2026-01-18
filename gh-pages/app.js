@@ -655,6 +655,13 @@ function pickPartNumber() {
   
   if (!partNum || partNum.trim() === '') return;
   
+  // Check for duplicate part number
+  const isDuplicate = pickedParts.some(p => p.partNumber === partNum);
+  if (isDuplicate) {
+    alert('This part number has already been picked!');
+    return;
+  }
+  
   // Add to picked parts array
   pickedParts.push({
     partNumber: partNum,

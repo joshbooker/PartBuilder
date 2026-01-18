@@ -1,6 +1,10 @@
 # Part Builder
 Interactive part number configurator for raw materials.
 
+## Documentation
+
+- [Technical Documentation](TECHNICAL-DOCUMENTATION.md) - Detailed implementation guide, data structures, and API reference
+
 ## Features
 
 - Dynamic part number generation
