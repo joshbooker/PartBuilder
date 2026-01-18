@@ -1,9 +1,7 @@
 # Part Builder
 Interactive part number configurator for raw materials.
 
-## Documentation
-
-- [Technical Documentation](TECHNICAL-DOCUMENTATION.md) - Detailed implementation guide, data structures, and API reference
+🔗 **[Live Application](https://joshbooker.github.io/PartBuilder/)** | 📖 **[Technical Documentation](gh-pages/TECHNICAL-DOCUMENTATION.md)**
 
 ## Features
 
